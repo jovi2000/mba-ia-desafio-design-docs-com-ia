@@ -7,7 +7,7 @@
 Desafio da pós-graduação (FullCycle/MBA IA): transformar `TRANSCRICAO.md` (reunião técnica de ~55min que decidiu a feature de webhooks de pedidos) + código do OMS existente em um pacote de design docs acionável. Entrega 100% documental em fork próprio do GitHub; o código (`src/`, `prisma/`, `tests/`, configs) e `TRANSCRICAO.md` são intocáveis. Regra central: todo item de documentação precisa ser rastreável à transcrição (timestamp + falante) ou ao código (path real).
 
 **Insumos:**
-- `ANALISE-DE-TRABALHO.md` (raiz do repo): mapa decisor com timestamps, âncoras de código, FRs, NFRs, fora de escopo, alternativas descartadas, questões em aberto, semente da matriz `WEBHOOK_*`, cuidados anti-alucinação e log de iterações
+- `WORK_ANALYSIS.md` (raiz do repo): mapa decisor com timestamps, referências de código, FRs, NFRs, fora de escopo, alternativas descartadas, questões em aberto, semente da matriz `WEBHOOK_*`, cuidados anti-alucinação e log de iterações
 - `prompts/` do professor: `prd-generator.md`, `fdd-generator.md`, `adr-generator.md` (mermaid e c4 como referência de regras)
 - `INSTRUCTIONS.MD`: seções obrigatórias e checklist de critérios de aceite
 
@@ -64,7 +64,7 @@ Regra de altura: sem detalhe de implementação do FDD (sem payloads de exemplo,
 
 - **Seção 4 (Fluxos)**: criação do evento na outbox dentro do `changeStatus` (via `publishWebhookEvent(tx, order, fromStatus, toStatus)` [09:41]), processamento pelo worker (polling 2s, batch de pendentes), retry com backoff, DLQ, replay admin. Diagramas mermaid embutidos (regras de `prompts/mermaid-diagram-generator.md` aplicadas inline): sequência do fluxo principal, fluxograma do worker com retry/DLQ, ER da outbox/deliveries/dead_letter.
 - **Seção 5 (Contratos públicos)**: 7 endpoints com request/response JSON e status codes: `POST /api/v1/webhooks`, `GET /api/v1/webhooks`, `PATCH /api/v1/webhooks/:id`, `DELETE /api/v1/webhooks/:id`, rotação de secret (`POST /api/v1/webhooks/:id/rotate-secret`), `GET /api/v1/webhooks/:id/deliveries`, `POST /api/v1/admin/webhooks/dead-letter/:id/replay`. Contrato do envio: payload (`event_id`, `event_type: "order.status_changed"`, `timestamp` ISO 8601, `order_id`, `order_number`, `from_status`, `to_status`, `customer_id`, `total_cents`) + headers (`X-Event-Id`, `X-Signature`, `X-Timestamp`, `X-Webhook-Id`, `Content-Type: application/json`) [09:43-09:45].
-- **Seção 6 (Erros/exceções/fallback)**: matriz com códigos `WEBHOOK_*` (citados: `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED` [09:28] + derivados no mesmo padrão ancorados nos requisitos: URL não https [09:23], payload > 64KB [09:23-09:24], falha de entrega, DLQ inexistente no replay). Resiliência: timeout 10s [09:42], retry 5x com backoff, DLQ, replay. Invariantes.
+- **Seção 6 (Erros/exceções/fallback)**: matriz com códigos `WEBHOOK_*` (citados: `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED` [09:28] + derivados no mesmo padrão referenciados nos requisitos: URL não https [09:23], payload > 64KB [09:23-09:24], falha de entrega, DLQ inexistente no replay). Resiliência: timeout 10s [09:42], retry 5x com backoff, DLQ, replay. Invariantes.
 - **Seção "Integração com o sistema existente"**: ≥4 paths reais com descrição de integração: `src/modules/orders/order.service.ts`, `src/shared/errors/http-errors.ts`, `src/middlewares/auth.middleware.ts`, `src/middlewares/error.middleware.ts`, `src/shared/logger/index.ts`, `src/routes/index.ts`/`src/app.ts`, `src/config/database.ts`, `prisma/schema.prisma`.
 - **Seção 7 (Observabilidade)**: métricas (sucesso/falha de entrega, latência, profundidade da fila), logs estruturados Pino (event_id, webhook_id, tentativa, status), tracing (correlação request → outbox → delivery).
 
@@ -86,14 +86,14 @@ Metas: ≥80% dos itens identificáveis cobertos; ≥70% das linhas com Fonte = 
 
 ## Etapa 6 — README do processo
 
-Substituir o placeholder por: Sobre o desafio (1-2 parágrafos), Ferramentas de IA utilizadas, Workflow adotado, Prompts customizados (≥2 em blocos de código), Iterações e ajustes (≥2 correções concretas, do log de iterações), Como navegar a entrega. Insumos coletados na seção 13 de `ANALISE-DE-TRABALHO.md`.
+Substituir o placeholder por: Sobre o desafio (1-2 parágrafos), Ferramentas de IA utilizadas, Workflow adotado, Prompts customizados (≥2 em blocos de código), Iterações e ajustes (≥2 correções concretas, do log de iterações), Como navegar a entrega. Insumos coletados na seção 13 de `WORK_ANALYSIS.md`.
 
 **Checkpoint 6 (final)**: revisão do usuário.
 
 ## Etapa 7 — Revisão final e verificação
 
 1. Varredura item por item da checklist de critérios de aceite do INSTRUCTIONS.MD.
-2. Verificações mecânicas via bash: paths citados existem; timestamps do TRACKER existem em `TRANSCRICAO.md`; contagens (5-8 ADRs, ≥4 endpoints, ≥4 paths de integração, ≥8 FRs, ≥2 fora de escopo, ≥2 alternativas, ≥2 questões em aberto); prefixo `WEBHOOK_`; percentuais do TRACKER; nenhum item descartado (email, dashboard, rate limiting, arquivamento, multi-worker, inbound) como requisito.
+2. Verificações manuais via bash: paths citados existem; timestamps do TRACKER existem em `TRANSCRICAO.md`; contagens (5-8 ADRs, ≥4 endpoints, ≥4 paths de integração, ≥8 FRs, ≥2 fora de escopo, ≥2 alternativas, ≥2 questões em aberto); prefixo `WEBHOOK_`; percentuais do TRACKER; nenhum item descartado (email, dashboard, rate limiting, arquivamento, multi-worker, inbound) como requisito.
 3. Nada é commitado ou pushado sem pedido explícito.
 
 ## Regras transversais
@@ -110,7 +110,7 @@ Substituir o placeholder por: Sobre o desafio (1-2 parágrafos), Ferramentas de 
 | 1 — ADRs (7 arquivos) + índice | Concluída (2026-11-22), checkpoint 1 apresentado |
 | 2 — RFC | Concluída (2026-11-22), checkpoint 2 apresentado |
 | 3 — FDD | Concluída (2026-11-22), checkpoint 3 apresentado |
-| 4 — PRD | Pendente |
-| 5 — TRACKER | Pendente |
-| 6 — README do processo | Pendente |
-| 7 — Revisão final e verificação | Pendente |
+| 4 — PRD | Concluída (2026-11-22), checkpoint 4 apresentado |
+| 5 — TRACKER | Concluída (2026-11-22), checkpoint 5 apresentado |
+| 6 — README do processo | Concluída (2026-11-22), checkpoint 6 apresentado |
+| 7 — Revisão final e verificação | Concluída (2026-11-22) |

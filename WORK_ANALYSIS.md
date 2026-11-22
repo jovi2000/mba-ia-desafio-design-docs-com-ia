@@ -11,7 +11,7 @@
 - Prazo: Atlas quer fim de novembro; estimativa de 3 sprints incluindo revisão de segurança `[09:45] Marcos / [09:46] Larissa / [09:47]`.
 - Revisão de segurança: Sofia reserva pelo menos 2 dias úteis antes do deploy (HMAC e geração de secret) `[09:46] Sofia`.
 
-## 2. Mapa do código existente (âncoras para os docs)
+## 2. Mapa do código existente (referências para os docs)
 
 | O quê | Onde | Observação |
 | --- | --- | --- |
@@ -110,7 +110,7 @@
 
 ## 9. Erros citados na transcrição (semente da matriz `WEBHOOK_*`)
 
-- Códigos citados explicitamente: `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`, "etc." `[09:28] Bruno`. O "etc." autoriza derivar códigos adicionais no mesmo padrão para as falhas previstas (validação de URL não-https, payload acima de 64KB, falha de entrega, replay inexistente etc.), desde que cada um esteja ancorado no requisito correspondente.
+- Códigos citados explicitamente: `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`, "etc." `[09:28] Bruno`. O "etc." autoriza derivar códigos adicionais no mesmo padrão para as falhas previstas (validação de URL não-https, payload acima de 64KB, falha de entrega, replay inexistente etc.), desde que cada um esteja referenciado no requisito correspondente.
 - Padrão existente a seguir: `INVALID_STATUS_TRANSITION`, `INSUFFICIENT_STOCK` (código uppercase, underscore) `src/shared/errors/http-errors.ts`.
 
 ## 10. Cuidados de geração (anti-alucinação)
@@ -143,7 +143,7 @@ Coleta incremental do que a versão final do `README.md` vai precisar. Atualizar
 
 ### Ferramentas de IA utilizadas
 
-- **Claude Code (CLI)** como ferramenta principal: agente com acesso direto ao repositório (leitura do código-fonte para mapear âncoras, edição dos arquivos Markdown e execução de verificações via bash).
+- **Claude Code (CLI)** como ferramenta principal: agente com acesso direto ao repositório (leitura do código-fonte para mapear referências, edição dos arquivos Markdown e execução de verificações via bash).
 - Prompts do professor (`prompts/`) usados como base, adaptados por etapa (detalhado abaixo).
 
 ### Uso dos prompts por etapa (o que foi usado e o que foi adaptado)
@@ -155,16 +155,20 @@ Coleta incremental do que a versão final do `README.md` vai precisar. Atualizar
 
 ### Workflow adotado (fatos para o README)
 
-1. Análise prévia: leitura completa de INSTRUCTIONS.MD, da transcrição e do código; mapa decisor consolidado em `ANALISE-DE-TRABALHO.md` (decisões com timestamps, âncoras de código, fora de escopo, alternativas descartadas, questões em aberto).
+1. Análise prévia: leitura completa de INSTRUCTIONS.MD, da transcrição e do código; mapa decisor consolidado em `WORK_ANALYSIS.md` (decisões com timestamps, referências de código, fora de escopo, alternativas descartadas, questões em aberto).
 2. Ordem de produção: ADRs → RFC → FDD → PRD → TRACKER → README (ordem sugerida pelo enunciado).
 3. Revisão por etapa com checkpoint do autor (papel de maestro), não geração de uma vez.
-4. Verificação mecânica via bash ao final de cada etapa: timestamps citados existem na TRANSCRICAO.md, paths de código existem, contagens, ausência de travessão.
+4. Verificação manual via bash ao final de cada etapa: timestamps citados existem na TRANSCRICAO.md, paths de código existem, contagens, ausência de travessão.
 5. Log de iterações na seção 12 deste arquivo; o README final cita as correções concretas.
 
 ### Iterações até agora
 
-- Ver seção 12 (log de iterações). Contagem até o momento: 3 correções concretas (ADR-003 citação errada; RFC citação malformada; FDD ajustes de mermaid e nomenclatura).
+- Ver seção 12 (log de iterações). Contagem até o momento: 5 correções concretas (ADR-003 citação errada; RFC citação malformada; FDD ajustes de mermaid e nomenclatura; PRD prazo do objetivo impreciso; TRACKER referência da linha de dados e bug do script de verificação).
 
-2. **Etapa RFC (2026-11-22)**: revisão crítica do RFC encontrou uma citação malformada no bloco de configuração ("[09:31]-09:34]", sem o colchete de abertura do segundo timestamp), corrigida para "[09:31]-[09:34]". Erro de digitação capturado na passada de revisão antes do checkpoint; a verificação mecânica (grep de timestamps contra a TRANSCRICAO.md) confirmou o restante.
+2. **Etapa RFC (2026-11-22)**: revisão crítica do RFC encontrou uma citação malformada no bloco de configuração ("[09:31]-09:34]", sem o colchete de abertura do segundo timestamp), corrigida para "[09:31]-[09:34]". Erro de digitação capturado na passada de revisão antes do checkpoint; a verificação manual (grep de timestamps contra a TRANSCRICAO.md) confirmou o restante.
 
-3. **Etapa FDD (2026-11-22)**: revisão crítica dos diagramas mermaid encontrou três desvios das regras de `prompts/mermaid-diagram-generator.md`: participantes com espaço no nome sem aspas (`API Express`, `Endpoint cliente`), labels de nó acima do limite de 3 palavras ("Envia HTTP timeout 10s", "Tentativa menor que 5?") e entidades do ER em MAIÚSCULAS quando os ADRs e a transcrição citam as tabelas em minúsculas (`webhook_outbox`, `webhook_dead_letter`). Todos corrigidos antes do checkpoint; verificação mecânica de timestamps e paths rodou limpa.
+3. **Etapa FDD (2026-11-22)**: revisão crítica dos diagramas mermaid encontrou três desvios das regras de `prompts/mermaid-diagram-generator.md`: participantes com espaço no nome sem aspas (`API Express`, `Endpoint cliente`), labels de nó acima do limite de 3 palavras ("Envia HTTP timeout 10s", "Tentativa menor que 5?") e entidades do ER em MAIÚSCULAS quando os ADRs e a transcrição citam as tabelas em minúsculas (`webhook_outbox`, `webhook_dead_letter`). Todos corrigidos antes do checkpoint; verificação manual de timestamps e paths rodou limpa.
+
+4. **Etapa PRD (2026-11-22)**: revisão crítica pegou imprecisão de fonte na tabela de objetivos: a meta de prazo dizia "fim do trimestre" citando [09:45]-[09:47], mas nesse trecho da transcrição o prazo concreto é "fim de novembro" (Marcos); "fim do trimestre" é a formulação de [09:00]. A meta foi corrigida para "até o fim de novembro", deixando "fim do trimestre" apenas na seção de problema, onde a citação é [09:00].
+
+5. **Etapa TRACKER (2026-11-22)**: dois ajustes. Primeiro, a linha FDD-DADO-01 misturava dois fatos com referências diferentes: o nome da tabela `webhook_outbox` vem de [09:06] Diego e o índice por status/created_at vem de [09:08] Diego; o conteúdo da linha foi restrito ao que a referência de fato sustenta. Segundo, o próprio script de verificação tinha um bug (a variável extraída já continha os colchetes do timestamp e virava classe de caracteres na regex, gerando falso negativo em todos os 87 pares); o check foi reescrito com prefixo fixo via awk e passou. Lição registrada para o README: a verificação manual também precisa ser verificada quando falha de forma suspeita.
